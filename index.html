@@ -1,0 +1,192 @@
+<!doctype html>
+
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<style>
+		.info {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+}
+.info h4 {
+    margin: 0 0 5px;
+    color: #777;
+}
+
+.legend {
+    line-height: 18px;
+    color: #555;
+}
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+}
+
+	</style>
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet" />
+</head>
+
+<body class="sansserif">
+	<div id="osm-map"></div>
+	<script type="module">
+		import { precincts } from "./js/util.js";
+		import { tempData } from "./js/utils_helper.js"
+
+		/*
+		ayer.feature.properties.Precinct_ID;
+			const datum = tempData.get(str);
+			*/element
+		function getStyle(feature) {
+			return {
+				fillColor: getColor(tempData.get(feature.properties.Precinct_ID)),
+				weight: 2,
+				opacity: 1,
+				color: 'white',
+				dashArray: '3',
+				fillOpacity: 0.7
+			};
+		}
+
+		function getColor(d) {
+			return d > 70 ? '#800026' :
+				d > 65 ? '#BD0026' :
+					d > 60 ? '#E31A1C' :
+						d > 55 ? '#FC4E2A' :
+							d > 50 ? '#FD8D3C' :
+								d > 45 ? '#FEB24C' :
+									d > 40 ? '#FED976' :
+										'#FFEDA0';
+		}
+
+
+
+		// Where you want to render the map.
+		var element = document.getElementById('osm-map');
+		// Height has to be set. You can do this in CSS too.
+		element.style = 'height:100vh;';
+		// Create Leaflet map on map element.
+		var map = L.map(element);
+		// Add OSM tile layer to the Leaflet map.
+		L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+		}).addTo(map);
+		// Target's GPS coordinates.
+		var target = L.latLng('37.87', '-122.27'); // berkeley 37°52′18″N 122°16′22″W
+		// Set map's center to target with zoom 14.
+		map.setView(target, 14);
+		// add geojson precincts to map
+
+		function zoomToFeature(e) {
+			map.fitBounds(e.target.getBounds());
+		}
+
+		function onEachFeature(feature, layer) {
+			layer.on({
+				mouseover: highlightFeature,
+			    mouseout: resetHighlight,
+				click: zoomToFeature
+			});
+		}/*
+		L.geoJSON(precincts,{
+			onEachFeature: onEachFeature
+		.bindPopup(function (layer) {
+			const str = layer.feature.properties.Precinct_ID;
+			const datum = tempData.get(str);
+
+			return "Precinct:" + str + " FF:" + datum + "%";
+			//return layer.feature.properties.Precinct_ID;
+		}).addTo(map);*/
+
+		var geojson = L.geoJSON(precincts,
+			{
+				style: getStyle,
+				onEachFeature: onEachFeature
+			})
+			.bindPopup(function (layer) {
+				const str = layer.feature.properties.Precinct_ID;
+				const datum = tempData.get(str);
+
+				return "Precinct:" + str + " FF:" + datum + "%";
+				//return layer.feature.properties.Precinct_ID;
+			})
+			.addTo(map);
+
+
+		// create an info box in upper right for hover over messages
+		// https://leafletjs.com/examples/choropleth/
+		function highlightFeature(e) {
+			var layer = e.target;
+
+			layer.setStyle({
+				weight: 5,
+				color: '#666',
+				dashArray: '',
+				fillOpacity: 0.7
+			});
+
+			layer.bringToFront();
+			info.update(layer.feature.properties);
+		}
+		function resetHighlight(e) {
+			geojson.resetStyle(e.target);
+			info.update();
+		}
+
+		var info = L.control();
+
+		info.onAdd = function (map) {
+			this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+			this.update();
+			return this._div;
+		};
+
+		// method that we will use to update the control based on feature properties passed
+		info.update = function (props) {
+
+			
+
+			this._div.innerHTML = '<h4>Measure FF Percent Yes</h4>' + (props ?
+				'<b>' + props.Precinct_ID + '</b><br />' + tempData.get(props.Precinct_ID) + '% Yes'
+				: 'Hover over a Berkeley precinct');
+
+			console.log(this._div.innerHTML );
+		};
+
+		info.addTo(map);
+
+		/* add a legend */
+		var legend = L.control({position: 'bottomright'});
+
+legend.onAdd = function (map) {
+
+    var div = L.DomUtil.create('div', 'info legend'),
+        grades = [40, 45, 50, 55, 60, 65, 70],
+        labels = [];
+
+    // loop through our density intervals and generate a label with a colored square for each interval
+    for (var i = 0; i < grades.length; i++) {
+		const color = getColor(grades[i]);
+
+        div.innerHTML +=
+            '<i style="background:' + getColor(grades[i]) + '"></i> ' +
+            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+
+		console.log (div.innerHTML);
+    }
+
+    return div;
+};
+
+legend.addTo(map);
+
+
+
+	</script>
+</body>

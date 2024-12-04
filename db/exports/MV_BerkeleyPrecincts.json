@@ -1,0 +1,130 @@
+[
+    {
+        "Description": "200100",
+        "PrecinctPortionId": 1
+    },
+    {
+        "Description": "200200",
+        "PrecinctPortionId": 9
+    },
+    {
+        "Description": "201400",
+        "PrecinctPortionId": 18
+    },
+    {
+        "Description": "202200",
+        "PrecinctPortionId": 26
+    },
+    {
+        "Description": "202500",
+        "PrecinctPortionId": 30
+    },
+    {
+        "Description": "202620",
+        "PrecinctPortionId": 36
+    },
+    {
+        "Description": "203100",
+        "PrecinctPortionId": 43
+    },
+    {
+        "Description": "203500",
+        "PrecinctPortionId": 51
+    },
+    {
+        "Description": "203800",
+        "PrecinctPortionId": 59
+    },
+    {
+        "Description": "203880",
+        "PrecinctPortionId": 66
+    },
+    {
+        "Description": "203890",
+        "PrecinctPortionId": 68
+    },
+    {
+        "Description": "204210",
+        "PrecinctPortionId": 70
+    },
+    {
+        "Description": "204300",
+        "PrecinctPortionId": 79
+    },
+    {
+        "Description": "204900",
+        "PrecinctPortionId": 87
+    },
+    {
+        "Description": "205200",
+        "PrecinctPortionId": 93
+    },
+    {
+        "Description": "205700",
+        "PrecinctPortionId": 102
+    },
+    {
+        "Description": "206200",
+        "PrecinctPortionId": 109
+    },
+    {
+        "Description": "206900",
+        "PrecinctPortionId": 116
+    },
+    {
+        "Description": "207000",
+        "PrecinctPortionId": 119
+    },
+    {
+        "Description": "207200",
+        "PrecinctPortionId": 126
+    },
+    {
+        "Description": "207700",
+        "PrecinctPortionId": 132
+    },
+    {
+        "Description": "208010",
+        "PrecinctPortionId": 140
+    },
+    {
+        "Description": "208300",
+        "PrecinctPortionId": 147
+    },
+    {
+        "Description": "208510",
+        "PrecinctPortionId": 154
+    },
+    {
+        "Description": "208690",
+        "PrecinctPortionId": 162
+    },
+    {
+        "Description": "208800",
+        "PrecinctPortionId": 164
+    },
+    {
+        "Description": "208820",
+        "PrecinctPortionId": 168
+    },
+    {
+        "Description": "208900",
+        "PrecinctPortionId": 170
+    },
+    {
+        "Description": "209010",
+        "PrecinctPortionId": 174
+    },
+    {
+        "Description": "209310",
+        "PrecinctPortionId": 181
+    },
+    {
+        "Description": "209700",
+        "PrecinctPortionId": 189
+    },
+    {
+        "Description": "209900",
+        "PrecinctPortionId": 194
+    }
+]
