@@ -10,7 +10,7 @@ MV_BerkeleyContests.json  MV_BerkeleyPrecints.json  MV_BerkeleyVoteByPrecinctAnd
 const contestJsonFile = './db/exports/MV_BerkeleyContests.json';
 const contestsJson = await getJson(contestJsonFile);
 
-const precinctsJsonFile = './db/exports/MV_BerkeleyPrecints.json';
+const precinctsJsonFile = './db/exports/MV_BerkeleyPrecincts.json';
 const precinctsJson = await getJson(precinctsJsonFile);
 
 const voteByPrecinctJsonFile = './db/exports/MV_BerkeleyVoteByPrecinctAndCandidate.json';
