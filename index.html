@@ -1,4 +1,5 @@
 <!doctype html>
+
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<style>
@@ -151,9 +152,9 @@
 					'<b>' + props.Precinct_ID + '</b><br />' + getPercent(props.Precinct_ID) + '% Yes'
 					: 'Hover over a Berkeley precinct');
 
-				console.log(this._div.innerHTML);
+				//console.log(this._div.innerHTML);
 			} else {
-				console.log("props ", props);
+				//console.log("props ", props);
 			}
 		};
 		info.addTo(map);
@@ -179,5 +180,40 @@
 			return div;
 		};
 		legend.addTo(map);
+
+		/* add a select box for the contests */
+		// https://gis.stackexchange.com/questions/131157/adding-drop-down-menu-on-leaflet-map-instead-of-l-control
+		var div = L.control({ position: 'topleft' });
+		div.onAdd = function (map) {
+			this._div = L.DomUtil.create('div', 'contestselectordiv'); // create a div with a class "info"
+			this.update();
+			return this._div;
+		};
+
+		div.update = function (props) {
+			console.log("update");
+			this._div.innerHTML = '<select><option>Measure AA</option><option>Measure BB</option><option>3</option></select>';
+			var str = '<select>';
+			for (const obj of contestsJson) {
+				str += '<option>' + obj.Contest + '</option>';
+			}
+			str += "</select>";
+			console.log(str);
+			this._div.innerHTML = str;
+
+
+		};
+
+		div.addTo(map);
+
+		//  handle events from selector
+		const selectElement = document.querySelector(".contestselectordiv");
+
+
+		selectElement.addEventListener("change", (event) => {
+			contestName = event.target.value;
+			console.log("contest:", contestName);
+		});
+
 	</script>
 </body>

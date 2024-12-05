@@ -8,3 +8,5 @@ pp/*
 db/*sqlite*
 
 node_modules
+
+.vscode/*
