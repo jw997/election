@@ -1,5 +1,4 @@
 <!doctype html>
-
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<style>
@@ -40,12 +39,8 @@
 		import { precincts, contestsJson, precinctsJson, voteByPrecinctJson } from "./js/util.js";
 		import { tempData } from "./js/utils_helper.js"
 
-		var contestName = "Price";
+		var contestName = "Y";
 
-		/*
-		ayer.feature.properties.Precinct_ID;
-			const datum = tempData.get(str);
-			*/
 		function getStyle(feature) {
 			return {
 				fillColor: getColor(getPercent(feature.properties.Precinct_ID)),
@@ -67,8 +62,6 @@
 									d > 40 ? '#FED976' :
 										'#FFEDA0';
 		}
-
-
 
 		// Where you want to render the map.
 		var element = document.getElementById('osm-map');
@@ -96,30 +89,15 @@
 				mouseout: resetHighlight,
 				click: zoomToFeature
 			});
-		}/*
-		L.geoJSON(precincts,{
-			onEachFeature: onEachFeature
-		.bindPopup(function (layer) {
-			const str = layer.feature.properties.Precinct_ID;
-			const datum = tempData.get(str);
-
-			return "Precinct:" + str + " FF:" + datum + "%";
-			//return layer.feature.properties.Precinct_ID;
-		}).addTo(map);*/
+		}
 		const contestVotes = voteByPrecinctJson.filter((e) => (e.Contest.includes(contestName)));
 
 		function getPercent(precinct) {
-
 			const contestPrecinctVotes = contestVotes.filter((e) => (e.Precinct.includes(precinct)));
-			//const pcent = getPercent(contestPrecinctVotes);
-
-
 			const yes = contestPrecinctVotes.filter((e) => (e.Candidate.includes("YES")));
 			const no = contestPrecinctVotes.filter((e) => (e.Candidate.includes("NO")));
-
 			const p = 100.0 * yes[0].N / (yes[0].N + no[0].N);
 			return p.toFixed(1);
-
 		}
 
 		var geojson = L.geoJSON(precincts,
@@ -129,23 +107,11 @@
 			})
 			.bindPopup(function (layer) {
 				const str = layer.feature.properties.Precinct_ID;
-				//const datum = tempData.get(str);
-
-				//const ff = voteByPrecinctJson.filter((e) => (e.Contest.includes(contestName)));
-				//const ffprecinct = ff.filter((e) => (e.Precinct.includes(str)));
-
-				//const ffYesPrecinct = ffprecinct.filter((e) => (e.Candidate.includes("YES")));
-				//const pcent = getPercent(ffprecinct);
 				const pcent = getPercent(str);
-
-			//	const num = ffYesPrecinct[0].N;
-			//	const old = "Precinct:" + str + contestName + ":" + datum + "%";
-				const retval = "Precinct:" + str + " " + contestName +":" + pcent + "%";
+				const retval = "Precinct:" + str + " " + contestName + ":" + pcent + "%";
 				return retval;
-				//return layer.feature.properties.Precinct_ID;
 			})
 			.addTo(map);
-
 
 		// create an info box in upper right for hover over messages
 		// https://leafletjs.com/examples/choropleth/
@@ -177,20 +143,9 @@
 
 		// method that we will use to update the control based on feature properties passed
 		info.update = function (props) {
-
 			if (props) {
 
-				//const contestVotes = voteByPrecinctJson.filter((e) => (e.Contest.includes(contestName)));
-				//const contestPrecinctVotes = contestVotes.filter((e) => (e.Precinct.includes(props.Precinct_ID)));
-				//const pcent = getPercent(contestPrecinctVotes);
-
-				const pcent = getPercent( props.Precinct_ID);
-				/*
-							this._div.innerHTML = '<h4>Measure FF Percent Yes</h4>' + (props ?
-								'<b>' + props.Precinct_ID + '</b><br />' + pcent + '% Yes'
-								: 'Hover over a Berkeley precinct');
-				*/
-
+				const pcent = getPercent(props.Precinct_ID);
 
 				this._div.innerHTML = '<h4>' + contestName + ' Percent Yes</h4>' + (props ?
 					'<b>' + props.Precinct_ID + '</b><br />' + getPercent(props.Precinct_ID) + '% Yes'
@@ -198,7 +153,7 @@
 
 				console.log(this._div.innerHTML);
 			} else {
-				console.log( "props " , props);
+				console.log("props ", props);
 			}
 		};
 		info.addTo(map);
