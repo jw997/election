@@ -1,0 +1,10 @@
+cvr/*
+
+pdf/*
+txt/*
+json/*
+pp/*
+
+db/*sqlite*
+
+node_modules
