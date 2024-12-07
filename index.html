@@ -1,5 +1,4 @@
 <!doctype html>
-
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<style>
@@ -38,7 +37,6 @@
 	<div id="osm-map"></div>
 	<script type="module">
 		import { precincts, contestsJson, precinctsJson, voteByPrecinctJson } from "./js/util.js";
-		import { tempData } from "./js/utils_helper.js"
 
 		const filteredContests = contestsJson.filter((o) => (o.Contest.includes('Measure') ||
 				o.Contest.includes('Proposition') ||
@@ -53,14 +51,11 @@
 				if (nameA > nameB) {
 					return 1;
 				}
-
 				// names must be equal
 				return 0;
 			});
 
-
 		var contestName = sortedContests[0].Contest;
-
 		function getStyle(feature) {
 			return {
 				fillColor: getColor(getPercent(feature.properties.Precinct_ID)),
@@ -144,8 +139,8 @@
 			const br = "<br>";
 			const sp = " ";
 			const summary = //"Percent Yes:" + yp1 + br
-				"Yes votes: " + yes[0].N + sp + yp1 + br
-				+ "No votes: " + no[0].N + sp + np1 + br;
+				  "Yes votes:" + sp + yes[0].N + sp + yp1 + br
+				+ "No votes:" + sp + no[0].N + sp + np1 + br;
 
 			return summary;
 		}
