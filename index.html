@@ -87,8 +87,8 @@
 		function onEachFeature(feature, layer) {
 			layer.on({
 				mouseover: highlightFeature,
-				mouseout: resetHighlight,
-				click: zoomToFeature
+				mouseout: resetHighlight//,
+				//click: zoomToFeature
 			});
 		}
 		var contestVotes;// = voteByPrecinctJson.filter((e) => (e.Contest.includes(contestName)));
@@ -105,6 +105,30 @@
 			const retval = p.toFixed(1);
 			console.log("getPercent ", retval);
 			return retval;
+		}
+
+		function formatPercent(num, den) {
+			const p = 100.0 * num / den;
+			return p.toFixed(1) + '%';
+		}
+
+		function getSummaryInfo(precinct) {
+			const contestPrecinctVotes = contestVotes.filter((e) => (e.Precinct.includes(precinct)));
+			const yes = contestPrecinctVotes.filter((e) => (e.Candidate.includes("YES")));
+			const no = contestPrecinctVotes.filter((e) => (e.Candidate.includes("NO")));
+			const total = yes[0].N + no[0].N;
+
+			//const p = 100.0 * yes[0].N / total;
+			//const p1 = p.toFixed(1);
+			const yp1 = formatPercent(yes[0].N, total);
+			const np1 = formatPercent(no[0].N, total);
+			const br = "<br>";
+			const sp = " ";
+			const summary = //"Percent Yes:" + yp1 + br
+				"Yes votes: " + yes[0].N + sp + yp1 + br
+				+ "No votes: " + no[0].N + sp + np1 + br;
+
+			return summary;
 		}
 
 		var geojson = L.geoJSON(precincts,
@@ -154,13 +178,14 @@
 
 				const pcent = getPercent(props.Precinct_ID);
 
-				this._div.innerHTML = '<h4>' + contestName + ' Percent Yes</h4>' + (props ?
-					'<b>' + props.Precinct_ID + '</b><br />' + getPercent(props.Precinct_ID) + '% Yes'
+				this._div.innerHTML = '<h4>' + contestName + '</h4>' + (props ?
+					'<b>' + props.Precinct_ID + '</b><br />'// + getPercent(props.Precinct_ID) + '% Yes'
+					+ getSummaryInfo(props.Precinct_ID)
 					: 'Hover over a Berkeley precinct');
 
 				//console.log(this._div.innerHTML);
 			} else {
-				//console.log("props ", props);
+				this._div.innerHTML = '<h4>' + contestName;
 			}
 		};
 		info.addTo(map);
@@ -200,7 +225,25 @@
 			console.log("update");
 			this._div.innerHTML = '<select><option>Measure AA</option><option>Measure BB</option><option>3</option></select>';
 			var str = '<select>';
-			for (const obj of contestsJson) {
+			const filteredContests = contestsJson.filter((o) => (o.Contest.includes('Measure') ||
+				o.Contest.includes('Proposition') ||
+				o.Contest.includes('Recall')))
+				;
+			const sorted = filteredContests.toSorted((a, b) => {
+				const nameA = a.Contest.toUpperCase(); // ignore upper and lowercase
+				const nameB = b.Contest.toUpperCase(); // ignore upper and lowercase
+				if (nameA < nameB) {
+					return -1;
+				}
+				if (nameA > nameB) {
+					return 1;
+				}
+
+				// names must be equal
+				return 0;
+			});
+
+			for (const obj of sorted) {
 				str += '<option>' + obj.Contest + '</option>';
 			}
 			str += "</select>";
@@ -219,15 +262,12 @@
 		selectElement.addEventListener("change", (event) => {
 			contestName = event.target.value;
 			resetContest(contestName);
-			console.log("contest:", contestName);
-
+			//console.log("contest:", contestName);
+			// recolor each precinct
 			geojson.eachLayer(function (layer) {
-				layer.setStyle({fillColor: getColor(getPercent(layer.feature.properties.Precinct_ID))});
-				//layer.setStyle({
-			//		style: getStyle
-			//	});
-
+				layer.setStyle({ fillColor: getColor(getPercent(layer.feature.properties.Precinct_ID)) });
 			});
+			info.update(); // clear the box
 
 		});
 
