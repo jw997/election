@@ -91,14 +91,20 @@
 				click: zoomToFeature
 			});
 		}
-		const contestVotes = voteByPrecinctJson.filter((e) => (e.Contest.includes(contestName)));
+		var contestVotes;// = voteByPrecinctJson.filter((e) => (e.Contest.includes(contestName)));
+		function resetContest(newContestName) {
+			contestVotes = voteByPrecinctJson.filter((e) => (e.Contest.includes(contestName)));
+		}
+		resetContest(contestName);
 
 		function getPercent(precinct) {
 			const contestPrecinctVotes = contestVotes.filter((e) => (e.Precinct.includes(precinct)));
 			const yes = contestPrecinctVotes.filter((e) => (e.Candidate.includes("YES")));
 			const no = contestPrecinctVotes.filter((e) => (e.Candidate.includes("NO")));
 			const p = 100.0 * yes[0].N / (yes[0].N + no[0].N);
-			return p.toFixed(1);
+			const retval = p.toFixed(1);
+			console.log("getPercent ", retval);
+			return retval;
 		}
 
 		var geojson = L.geoJSON(precincts,
@@ -212,7 +218,17 @@
 
 		selectElement.addEventListener("change", (event) => {
 			contestName = event.target.value;
+			resetContest(contestName);
 			console.log("contest:", contestName);
+
+			geojson.eachLayer(function (layer) {
+				layer.setStyle({fillColor: getColor(getPercent(layer.feature.properties.Precinct_ID))});
+				//layer.setStyle({
+			//		style: getStyle
+			//	});
+
+			});
+
 		});
 
 	</script>
