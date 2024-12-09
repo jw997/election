@@ -1,4 +1,5 @@
 <!doctype html>
+
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<style>
@@ -36,26 +37,32 @@
 <body class="sansserif">
 	<div id="osm-map"></div>
 	<script type="module">
-		import { precincts, contestsJson, precinctsJson, voteByPrecinctJson } from "./js/util.js";
+		import { precincts, contestsJson, candidatesJson, precinctsJson, voteByPrecinctJson } from "./js/util.js";
 
-		const filteredContests = contestsJson.filter((o) => (o.Contest.includes('Measure') ||
-				o.Contest.includes('Proposition') ||
-				o.Contest.includes('Recall')))
-				;
-			const sortedContests = filteredContests.toSorted((a, b) => {
-				const nameA = a.Contest.toUpperCase(); // ignore upper and lowercase
-				const nameB = b.Contest.toUpperCase(); // ignore upper and lowercase
-				if (nameA < nameB) {
-					return -1;
-				}
-				if (nameA > nameB) {
-					return 1;
-				}
-				// names must be equal
-				return 0;
-			});
+		const filteredContests = contestsJson.filter((o) => (true || o.Contest.includes('Pres') || o.Contest.includes('Mayor') || o.Contest.includes('Measure') ||
+			o.Contest.includes('Proposition') ||
+			o.Contest.includes('Recall')))
+			;
+		const sortedContests = filteredContests.toSorted((a, b) => {
+			const nameA = a.Contest.toUpperCase(); // ignore upper and lowercase
+			const nameB = b.Contest.toUpperCase(); // ignore upper and lowercase
+			if (nameA < nameB) {
+				return -1;
+			}
+			if (nameA > nameB) {
+				return 1;
+			}
+			// names must be equal
+			return 0;
+		});
 
+		function getCandidates(contest) {
+			const retval = candidatesJson.filter((e) => e.Contest == contest).map((e) => e.Candidate).sort()
+			return retval;
+		}
 		var contestName = sortedContests[0].Contest;
+		var candidateName = getCandidates(contestName)[0];
+
 		function getStyle(feature) {
 			return {
 				fillColor: getColor(getPercent(feature.properties.Precinct_ID)),
@@ -68,14 +75,20 @@
 		}
 
 		function getColor(d) {
-			return d > 70 ? '#800026' :
-				d > 65 ? '#BD0026' :
-					d > 60 ? '#E31A1C' :
-						d > 55 ? '#FC4E2A' :
-							d > 50 ? '#FD8D3C' :
-								d > 45 ? '#FEB24C' :
-									d > 40 ? '#FED976' :
-										'#FFEDA0';
+			if (d === undefined) {
+				return '#000000';
+			}
+// https://colorbrewer2.org/#type=sequential&scheme=YlOrRd&n=9
+			return d >= 70 ? '#800026' :
+				d >= 65 ? '#BD0026' :
+					d >= 60 ? '#E31A1C' :
+						d >= 55 ? '#FC4E2A' :
+							d >= 50 ? '#FD8D3C' :
+								d >= 45 ? '#FEB24C' :
+									d >= 40 ? '#FED976' :
+										d>=30 ? '#FFEDA0':
+										 '#ffffcc';
+										 
 		}
 
 		// Where you want to render the map.
@@ -113,9 +126,36 @@
 
 		function getPercent(precinct) {
 			const contestPrecinctVotes = contestVotes.filter((e) => (e.Precinct.includes(precinct)));
-			const yes = contestPrecinctVotes.filter((e) => (e.Candidate.includes("YES")));
-			const no = contestPrecinctVotes.filter((e) => (e.Candidate.includes("NO")));
-			const p = 100.0 * yes[0].N / (yes[0].N + no[0].N);
+			const yes = contestPrecinctVotes.filter((e) => (e.Candidate == candidateName));
+			const no = contestPrecinctVotes.filter((e) => (e.Candidate != candidateName));
+
+			var yesN = 0;
+			if (yes.length>0) {
+				yesN = yes[0].N;
+			}
+
+			var total = 0;
+			total = contestPrecinctVotes.reduce(
+					(a, c) => a + c.N,
+					0,
+				);
+
+			
+			if (no.length == 0) {
+				return undefined;
+			}
+
+		
+/*
+			// total the No votes
+			var noes = 0;
+			noes = no.reduce(
+				(a, c) => a + c.N,
+				0,
+			);
+			const total = yes[0].N + noes;*/
+
+			const p = 100.0 * yesN / total;
 			const retval = p.toFixed(1);
 			console.log("getPercent ", retval);
 			return retval;
@@ -126,36 +166,81 @@
 			return p.toFixed(1) + '%';
 		}
 
+		function comparePrecinctVotes(a,b) {
+			return b.N - a.N;
+		}
+
+
 		function getSummaryInfo(precinct) {
 			const contestPrecinctVotes = contestVotes.filter((e) => (e.Precinct.includes(precinct)));
-			const yes = contestPrecinctVotes.filter((e) => (e.Candidate.includes("YES")));
-			const no = contestPrecinctVotes.filter((e) => (e.Candidate.includes("NO")));
-			const total = yes[0].N + no[0].N;
 
-			//const p = 100.0 * yes[0].N / total;
-			//const p1 = p.toFixed(1);
-			const yp1 = formatPercent(yes[0].N, total);
-			const np1 = formatPercent(no[0].N, total);
-			const br = "<br>";
-			const sp = " ";
-			const summary = //"Percent Yes:" + yp1 + br
-				  "Yes votes:" + sp + yes[0].N + sp + yp1 + br
-				+ "No votes:" + sp + no[0].N + sp + np1 + br;
+			var total = 0;
+			total = contestPrecinctVotes.reduce(
+					(a, c) => a + c.N,
+					0,
+				);
 
-			return summary;
+			const yes = contestPrecinctVotes.filter((e) => (e.Candidate == candidateName));
+			const no_unsorted = contestPrecinctVotes.filter((e) => (e.Candidate != candidateName));
+			const no =no_unsorted.sort(comparePrecinctVotes);
+
+			var yesN = 0;
+			if (yes.length>0) {
+				yesN = yes[0].N;
+			}
+
+			if ( no.length > 0) {
+
+				// total the No votes
+				var noes = 0;
+				noes = no.reduce(
+					(a, c) => a + c.N,
+					0,
+				);
+				//const total = yes[0].N + noes;
+
+				//const p = 100.0 * yes[0].N / total;
+				//const p1 = p.toFixed(1);
+				const yp1 = formatPercent(yesN, total);
+				const np1 = formatPercent( total - yesN, total);
+				const br = "<br>";
+				const sp = " ";
+				var summary = "" //"Percent Yes:" + yp1 + br
+					+ candidateName + " votes:" + sp + yesN + sp + yp1 + br + br;
+					//+ "other votes:" + sp + noes + sp + np1 + br;
+
+				for (const o of no) {
+					summary += o.Candidate + ':' + sp + o.N + sp + formatPercent(o.N, total) + br;
+				}
+				
+				
+
+				return summary;
+			} else {
+				return "";
+			}
+		}
+
+		
+//TODO try removing 203800
+		function precinctFilter(feature) {
+			console.log(feature.properties.Precinct_ID);
+			const retval  = feature.properties.Precinct_ID != '203800';
+			return retval;
 		}
 
 		var geojson = L.geoJSON(precincts,
 			{
 				style: getStyle,
 				onEachFeature: onEachFeature
+				//,				filter: precinctFilter
 			})
-			.bindPopup(function (layer) {
+		/*	.bindPopup(function (layer) {
 				const str = layer.feature.properties.Precinct_ID;
 				const pcent = getPercent(str);
 				const retval = "Precinct:" + str + " " + contestName + ":" + pcent + "%";
 				return retval;
-			})
+			})*/
 			.addTo(map);
 
 		// create an info box in upper right for hover over messages
@@ -189,11 +274,8 @@
 		// method that we will use to update the control based on feature properties passed
 		info.update = function (props) {
 			if (props) {
-
-				const pcent = getPercent(props.Precinct_ID);
-
 				this._div.innerHTML = '<h4>' + contestName + '</h4>' + (props ?
-					'<b>' + props.Precinct_ID + '</b><br />'// + getPercent(props.Precinct_ID) + '% Yes'
+					'<b> Precint: ' + props.Precinct_ID + '</b><br />'
 					+ getSummaryInfo(props.Precinct_ID)
 					: 'Hover over a Berkeley precinct');
 
@@ -209,7 +291,7 @@
 
 		legend.onAdd = function (map) {
 			var div = L.DomUtil.create('div', 'info legend'),
-				grades = [40, 45, 50, 55, 60, 65, 70],
+				grades = [0,30, 40, 45, 50, 55, 60, 65, 70],
 				labels = [];
 
 			// loop through our density intervals and generate a label with a colored square for each interval
@@ -237,29 +319,38 @@
 
 		div.update = function (props) {
 			console.log("update");
-			this._div.innerHTML = '<select><option>Measure AA</option><option>Measure BB</option><option>3</option></select>';
-			var str = '<select>';
-			
+			//this._div.innerHTML = '<select><option>Measure AA</option><option>Measure BB</option><option>3</option></select>';
+			var str = '<select class="contestSelector">';
 
 			for (const obj of sortedContests) {
 				str += '<option>' + obj.Contest + '</option>';
 			}
 			str += "</select>";
+
+			// another select for candidate to highlight
+			var str2 = '<select class="candidateSelector">';
+			for (const candidate of getCandidates(contestName)) {
+				str2 += '<option>' + candidate + '</option>';
+			}
+			str2 += '</select>';
+
+			str += str2;
 			console.log(str);
 			this._div.innerHTML = str;
-
-
 		};
 
 		div.addTo(map);
 
 		//  handle events from selector
-		const selectElement = document.querySelector(".contestselectordiv");
+		const selectContestElement = document.querySelector(".contestSelector");
+		const selectCandidateElement = document.querySelector(".candidateSelector");
 
-
-		selectElement.addEventListener("change", (event) => {
+		selectContestElement.addEventListener("change", (event) => {
 			contestName = event.target.value;
 			resetContest(contestName);
+
+			// update the candidateName 
+			candidateName = getCandidates(contestName)[0];
 			//console.log("contest:", contestName);
 			// recolor each precinct
 			geojson.eachLayer(function (layer) {
@@ -267,6 +358,31 @@
 			});
 			info.update(); // clear the box
 
+			// update the options in the candidateSelector
+			//selectCandidateElement = document.querySelector(".candidateSelector");
+			var str2 = '<select class="candidateSelector">';
+			for (const candidate of getCandidates(contestName)) {
+				str2 += '<option>' + candidate + '</option>';
+			}
+			str2 += '</select>';
+
+
+			console.log(str2);
+			selectCandidateElement.innerHTML = str2;
+
+
+		});
+
+
+		selectCandidateElement.addEventListener("change", (event) => {
+			candidateName = event.target.value;
+			//resetContest(contestName);
+			//console.log("contest:", contestName);
+			// recolor each precinct
+			geojson.eachLayer(function (layer) {
+				layer.setStyle({ fillColor: getColor(getPercent(layer.feature.properties.Precinct_ID)) });
+			});
+			info.update(); // clear the box
 		});
 
 	</script>
