@@ -78,7 +78,7 @@
 			if (d === undefined) {
 				return '#000000';
 			}
-// https://colorbrewer2.org/#type=sequential&scheme=YlOrRd&n=9
+			// https://colorbrewer2.org/#type=sequential&scheme=YlOrRd&n=9
 			return d >= 70 ? '#800026' :
 				d >= 65 ? '#BD0026' :
 					d >= 60 ? '#E31A1C' :
@@ -86,9 +86,9 @@
 							d >= 50 ? '#FD8D3C' :
 								d >= 45 ? '#FEB24C' :
 									d >= 40 ? '#FED976' :
-										d>=30 ? '#FFEDA0':
-										 '#ffffcc';
-										 
+										d >= 30 ? '#FFEDA0' :
+											'#ffffcc';
+
 		}
 
 		// Where you want to render the map.
@@ -130,34 +130,23 @@
 			const no = contestPrecinctVotes.filter((e) => (e.Candidate != candidateName));
 
 			var yesN = 0;
-			if (yes.length>0) {
+			if (yes.length > 0) {
 				yesN = yes[0].N;
 			}
 
 			var total = 0;
 			total = contestPrecinctVotes.reduce(
-					(a, c) => a + c.N,
-					0,
-				);
+				(a, c) => a + c.N,
+				0,
+			);
 
-			
 			if (no.length == 0) {
 				return undefined;
 			}
 
-		
-/*
-			// total the No votes
-			var noes = 0;
-			noes = no.reduce(
-				(a, c) => a + c.N,
-				0,
-			);
-			const total = yes[0].N + noes;*/
-
 			const p = 100.0 * yesN / total;
 			const retval = p.toFixed(1);
-			console.log("getPercent ", retval);
+		//	console.log("getPercent ", retval);
 			return retval;
 		}
 
@@ -166,30 +155,29 @@
 			return p.toFixed(1) + '%';
 		}
 
-		function comparePrecinctVotes(a,b) {
+		function comparePrecinctVotes(a, b) {
 			return b.N - a.N;
 		}
-
 
 		function getSummaryInfo(precinct) {
 			const contestPrecinctVotes = contestVotes.filter((e) => (e.Precinct.includes(precinct)));
 
 			var total = 0;
 			total = contestPrecinctVotes.reduce(
-					(a, c) => a + c.N,
-					0,
-				);
+				(a, c) => a + c.N,
+				0,
+			);
 
 			const yes = contestPrecinctVotes.filter((e) => (e.Candidate == candidateName));
 			const no_unsorted = contestPrecinctVotes.filter((e) => (e.Candidate != candidateName));
-			const no =no_unsorted.sort(comparePrecinctVotes);
+			const no = no_unsorted.sort(comparePrecinctVotes);
 
 			var yesN = 0;
-			if (yes.length>0) {
+			if (yes.length > 0) {
 				yesN = yes[0].N;
 			}
 
-			if ( no.length > 0) {
+			if (no.length > 0) {
 
 				// total the No votes
 				var noes = 0;
@@ -202,32 +190,28 @@
 				//const p = 100.0 * yes[0].N / total;
 				//const p1 = p.toFixed(1);
 				const yp1 = formatPercent(yesN, total);
-				const np1 = formatPercent( total - yesN, total);
+				const np1 = formatPercent(total - yesN, total);
 				const br = "<br>";
 				const sp = " ";
 				var summary = "" //"Percent Yes:" + yp1 + br
 					+ candidateName + " votes:" + sp + yesN + sp + yp1 + br + br;
-					//+ "other votes:" + sp + noes + sp + np1 + br;
+				//+ "other votes:" + sp + noes + sp + np1 + br;
 
 				for (const o of no) {
 					summary += o.Candidate + ':' + sp + o.N + sp + formatPercent(o.N, total) + br;
 				}
-				
-				
 
 				return summary;
 			} else {
 				return "";
 			}
 		}
-
-		
-//TODO try removing 203800
+/*
 		function precinctFilter(feature) {
 			console.log(feature.properties.Precinct_ID);
-			const retval  = feature.properties.Precinct_ID != '203800';
+			const retval = feature.properties.Precinct_ID != '203800';
 			return retval;
-		}
+		}*/
 
 		var geojson = L.geoJSON(precincts,
 			{
@@ -235,12 +219,12 @@
 				onEachFeature: onEachFeature
 				//,				filter: precinctFilter
 			})
-		/*	.bindPopup(function (layer) {
-				const str = layer.feature.properties.Precinct_ID;
-				const pcent = getPercent(str);
-				const retval = "Precinct:" + str + " " + contestName + ":" + pcent + "%";
-				return retval;
-			})*/
+			/*	.bindPopup(function (layer) {
+					const str = layer.feature.properties.Precinct_ID;
+					const pcent = getPercent(str);
+					const retval = "Precinct:" + str + " " + contestName + ":" + pcent + "%";
+					return retval;
+				})*/
 			.addTo(map);
 
 		// create an info box in upper right for hover over messages
@@ -291,7 +275,7 @@
 
 		legend.onAdd = function (map) {
 			var div = L.DomUtil.create('div', 'info legend'),
-				grades = [0,30, 40, 45, 50, 55, 60, 65, 70],
+				grades = [0, 30, 40, 45, 50, 55, 60, 65, 70],
 				labels = [];
 
 			// loop through our density intervals and generate a label with a colored square for each interval
@@ -360,19 +344,32 @@
 
 			// update the options in the candidateSelector
 			//selectCandidateElement = document.querySelector(".candidateSelector");
+
+			// what is the candidate selector point to now?
+			const oldValue = selectCandidateElement.value;
+            var first = undefined;
+
 			var str2 = '<select class="candidateSelector">';
 			for (const candidate of getCandidates(contestName)) {
+				first = first ?? candidate;
 				str2 += '<option>' + candidate + '</option>';
 			}
 			str2 += '</select>';
+		//	console.log("oldvalue: ", oldValue, " first: ", first);
 
-
-			console.log(str2);
 			selectCandidateElement.innerHTML = str2;
 
-
+			if (str2.includes(oldValue)) {
+				// keep it
+				selectCandidateElement.value = oldValue;
+				selectCandidateElement.dispatchEvent(new Event('change'));
+			} else {
+				if (str2.includes("YES")) {
+					selectCandidateElement.value = "YES";
+					selectCandidateElement.dispatchEvent(new Event('change'));
+				}
+			}
 		});
-
 
 		selectCandidateElement.addEventListener("change", (event) => {
 			candidateName = event.target.value;
