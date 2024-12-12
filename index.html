@@ -27,7 +27,7 @@
 			height: 18px;
 			float: left;
 			margin-right: 8px;
-			opacity: 0.7;
+			opacity: 0.8;
 		}
 	</style>
 	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -70,7 +70,7 @@
 				opacity: 1,
 				color: 'white',
 				dashArray: '3',
-				fillOpacity: 0.7
+				fillOpacity: 0.8
 			};
 		}
 
@@ -79,15 +79,67 @@
 				return '#000000';
 			}
 			// https://colorbrewer2.org/#type=sequential&scheme=YlOrRd&n=9
-			return d >= 70 ? '#800026' :
-				d >= 65 ? '#BD0026' :
-					d >= 60 ? '#E31A1C' :
-						d >= 55 ? '#FC4E2A' :
-							d >= 50 ? '#FD8D3C' :
-								d >= 45 ? '#FEB24C' :
-									d >= 40 ? '#FED976' :
-										d >= 30 ? '#FFEDA0' :
-											'#ffffcc';
+
+			const retval = d >= 95 ? '#08306b' :
+				d >= 90 ? '#08519c' :
+					d >= 80 ? '#2171b5' :
+						d >= 70 ? '#4292c6' :
+							d >= 60 ? '#6baed6' :
+								d >= 50 ? '#9ecae1' :
+								//	d >= 50 ? '#c6dbef' :
+								//		d >= 50 ? '#deebf7' :
+										//	d >= 50 ? '#f7fbff' :
+
+											//	d >= 45 ? '#ffffcc' :
+								//					d >= 40 ? '#FFEDA0' :
+													//	d >= 40 ? '#FED976' :
+															d >= 40 ? '#FEB24C' :
+																d >= 30 ? '#FD8D3C' :
+																	d >= 20 ? '#FC4E2A' :
+																		d >= 10 ? '#E31A1C' :
+																			d >= 5 ? '#BD0026' :
+																				'#800026';
+			return retval;
+			/*
+
+		 return  d >=  85 ?  '#ffffcc':
+		  d >= 80 ? '#FFEDA0' :
+		  d >= 75 ? '#FED976' :
+		  d >= 70 ? '#FEB24C' :
+		  d >= 65 ? '#FD8D3C' :
+		  d >= 60 ? '#FC4E2A' :
+		  d >= 55 ? '#E31A1C' :
+		  d >= 50 ? '#BD0026' :
+		  
+		  d >= 45 ? '#800026' :
+		  d >=  40 ?'#08306b' :
+		  d >=  35 ? '#08519c' :
+		  d >=  30 ?'#2171b5' :
+		  d >=  25 ?'#4292c6' :
+		  d >=  20 ?'#6baed6' :
+		  d >=  15 ?'#9ecae1' :
+		  d >=  10 ?'#c6dbef' :
+		  '#deebf7' 
+/*
+		 return d >=  90 ?'#f7fbff' :
+		  d >=  85 ?'#deebf7' :
+		  d >=  80 ?'#c6dbef' :
+		  d >=  75 ?'#9ecae1' :
+		  d >=  70 ?'#6baed6' :
+		  d >=  65 ?'#4292c6' :
+		  d >=  60 ?'#2171b5' :
+		  d >=  55 ? '#08519c' :
+		  d >=  50 ?'#08306b' :
+
+		  d >= 45 ? '#800026' :
+		  d >= 40 ? '#BD0026' :
+		  d >= 35 ? '#E31A1C' :
+		  d >= 30 ? '#FC4E2A' :
+		  d >= 25 ? '#FD8D3C' :
+		  d >= 20 ? '#FEB24C' :
+		  d >= 15 ? '#FED976' :
+		  d >= 10 ? '#FFEDA0' :
+			 '#ffffcc';*/
 
 		}
 
@@ -146,7 +198,7 @@
 
 			const p = 100.0 * yesN / total;
 			const retval = p.toFixed(1);
-		//	console.log("getPercent ", retval);
+			//	console.log("getPercent ", retval);
 			return retval;
 		}
 
@@ -206,12 +258,12 @@
 				return "";
 			}
 		}
-/*
-		function precinctFilter(feature) {
-			console.log(feature.properties.Precinct_ID);
-			const retval = feature.properties.Precinct_ID != '203800';
-			return retval;
-		}*/
+		/*
+				function precinctFilter(feature) {
+					console.log(feature.properties.Precinct_ID);
+					const retval = feature.properties.Precinct_ID != '203800';
+					return retval;
+				}*/
 
 		var geojson = L.geoJSON(precincts,
 			{
@@ -275,16 +327,18 @@
 
 		legend.onAdd = function (map) {
 			var div = L.DomUtil.create('div', 'info legend'),
-				grades = [0, 30, 40, 45, 50, 55, 60, 65, 70],
+				grades = [0, 5, 10, 20,  30,  40, 50,  60,  70,  80,  90,95],
 				labels = [];
 
 			// loop through our density intervals and generate a label with a colored square for each interval
-			for (var i = 0; i < grades.length; i++) {
+			for (var i = grades.length - 1; i >= 0; i--) {
 				const color = getColor(grades[i]);
 
 				div.innerHTML +=
 					'<i style="background:' + getColor(grades[i]) + '"></i> ' +
-					grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+					grades[i] + '&ndash;' +
+					(grades[i + 1] || '+') +
+					'<br>';
 
 				console.log(div.innerHTML);
 			}
@@ -347,7 +401,7 @@
 
 			// what is the candidate selector point to now?
 			const oldValue = selectCandidateElement.value;
-            var first = undefined;
+			var first = undefined;
 
 			var str2 = '<select class="candidateSelector">';
 			for (const candidate of getCandidates(contestName)) {
@@ -355,7 +409,7 @@
 				str2 += '<option>' + candidate + '</option>';
 			}
 			str2 += '</select>';
-		//	console.log("oldvalue: ", oldValue, " first: ", first);
+			//	console.log("oldvalue: ", oldValue, " first: ", first);
 
 			selectCandidateElement.innerHTML = str2;
 
